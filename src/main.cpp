@@ -42,9 +42,13 @@
 #include "BladeStateAgent.h"
 #include "MQTTRouterSaber.h"
 
+#include "hardware/rtc.h"
+#include "pico/util/datetime.h"
+
 
 void core1_entry() {
 	BladeMgr blade;
+	blade.turnOn();
 	blade.loopForever();
 
 }
@@ -119,7 +123,7 @@ void runTimeStats( ){
 void
 init_thread(void* pvParameters) {
 	char mqttTarget[] = MQTTHOST;
-	lwesp_port_t mqttPort = MQTTPORT;
+	uint mqttPort = MQTTPORT;
 	char mqttUser[] = MQTTUSER;
 	char * pMqttUser = mqttUser;
 	char mqttPwd[] = MQTTPASSWD;
@@ -134,7 +138,7 @@ init_thread(void* pvParameters) {
 	MQTTRouterSaber mqttRouter;
 	SaberState state;
 
-	MQTTAgent mqttAgent(512, 512);
+	MQTTAgent mqttAgent;
 	BladeStateAgent xTwin;
 	MQTTPingTask xPing;
 
@@ -143,8 +147,12 @@ init_thread(void* pvParameters) {
 	xLed.set(RGBModeOn, 0xFF, 0xFF, 0xFF);
 	RGBLEDMgr xLedMgr(&xLed);
 
+	if (!WifiHelper::init()){
+		printf("WIFI Init failed\n");
+	}
+
 	//Connect to WiFi
-	if (WifiHelper::connectToAp(SID, PASSWD)){
+	if (WifiHelper::join(SID, PASSWD)){
 		char ips[16];
 		WifiHelper::getIPAddressStr(ips);
 		printf("WIFI IP %s\n", ips);
@@ -159,7 +167,11 @@ init_thread(void* pvParameters) {
 		} else {
 			printf("MAC NOT AVAILABLE\n");
 		}
-		WifiHelper::syncRTCwithSNTP();
+		WifiHelper::sntpAddServer("0.uk.pool.ntp.org");
+		WifiHelper::sntpAddServer("1.uk.pool.ntp.org");
+		WifiHelper::sntpAddServer("2.uk.pool.ntp.org");
+		WifiHelper::sntpStartSync();
+
 
 
 		//Set up the credentials so we have an ID for our thing
@@ -172,13 +184,15 @@ init_thread(void* pvParameters) {
 		xTwin.start(tskIDLE_PRIORITY+1);
 		xTwin.setTopics(mqttRouter.getGroupTopicOn(), mqttRouter.getGroupTopicOff());
 
+
 		//Start up a Ping agent to mange ping requests
 		xPing.setInterface(&mqttAgent);
 		xPing.start(tskIDLE_PRIORITY+1);
 
 		//Give the router the twin and ping agents
 		mqttRouter.setTwin(&xTwin);
-		mqttRouter.setPingTask(&xPing);
+		//mqttRouter.setPingTask(&xPing);
+
 
 		//Setup and start the mqttAgent
 		mqttAgent.setObserver(&xLedMgr);
@@ -187,9 +201,15 @@ init_thread(void* pvParameters) {
 #ifdef MQTTSSL
 		ssl = true;
 #endif
-		mqttAgent.connect(mqttTarget, mqttPort, true, ssl);
+		printf("Connect to %s on %d with %s %s\n", mqttTarget, mqttPort, pMqttUser, pMqttPwd);
+		if (ssl){
+			printf("SSL\n");
+		}
+
+		mqttAgent.mqttConnect(mqttTarget, mqttPort, true, ssl);
 
 		mqttAgent.start(tskIDLE_PRIORITY+1);
+
 
 	} else {
 		xLed.set(RGBModeSlow, 0xFF, 0xff, 0xff);
@@ -201,13 +221,27 @@ init_thread(void* pvParameters) {
     	vTaskDelay(5000);
 
     	if (! WifiHelper::isJoined()){
-    		while (! WifiHelper::connectToAp(SID, PASSWD)){
+    		while (! WifiHelper::join(SID, PASSWD)){
     			vTaskDelay(5000);
     		}
     		char ips[16];
 			WifiHelper::getIPAddressStr(ips);
 			printf("WIFI IP %s\n", ips);
     	}
+
+
+    	datetime_t t;
+    	if(rtc_get_datetime ( &t)){
+    		printf("%d-%d-%d %d:%d:%d\n",
+    				t.year,
+					t.month,
+					t.day,
+					t.hour,
+					t.min,
+					t.sec
+    				);
+    	}
+
 
     	//runTimeStats();
     }
@@ -232,7 +266,7 @@ int main() {
 	atReturned = xTaskCreate(
 					init_thread,
 					"Init task",
-					512,
+					9000,
 					( void * ) 1,
 					tskIDLE_PRIORITY+1,
 					&atHandle );

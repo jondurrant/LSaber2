@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Saber Lamps</title>
+
+  <style>
+  .clientId {
+  	width:	200px
+  }
+  </style>
+
+  <script type="text/javascript">
+  function SaberIncInit(){
+	  $("#saveAll").click(function() {
+		  saberSave(true);
+	  });
+	  $("#clientId").click(function() {
+		  saberSave(false);
+	  });
+	  $("#refresh").click(function() {
+		  refresh();
+	  });
+	  $("#lampOn").click(function() {
+		  lampOn(true);
+	  });
+	  $("#lampOff").click(function() {
+		  lampOn(false);
+	  });
+	  refresh();
+  }
+  
+  function refresh(){
+		var url = "/api/getSabers";
+		var data = {
+		};
+	 	var json = JSON.stringify(data); 
+		$.ajax({
+		    type: 'POST',
+		    url: url,
+		    contentType: "application/json",
+		    data: json,
+		    dataType: 'json',
+		    success: function (json) {
+		        drawTable(json);	
+		    }
+		});
+	};
+	
+	
+	function saberSave(all){
+		var url = "/api/setSabers";
+		delta={};
+		delta.dseq = parseInt($("#dseq").val());
+		delta.nseq = parseInt($("#nseq").val());
+		delta.days = parseInt($("#days").val());
+		delta.daye = parseInt($("#daye").val());
+		delta.timer = parseInt($("#timer").val());
+		
+		delta.drgb = hexToRgb($("#drgb").val());
+		delta.nrgb = hexToRgb($("#nrgb").val());
+		 
+		data = {"delta": delta};
+		if (!all){
+			data.target = $('#clientId').text();
+		}
+		//alert("Sending: "+JSON.stringify(data));
+		
+	 	var json = JSON.stringify(data); 
+		$.ajax({
+		    type: 'POST',
+		    url: url,
+		    contentType: "application/json",
+		    data: json,
+		    dataType: 'json',
+		    success: function (json) {
+		        refresh();	
+		    }
+		});
+		
+	}
+	
+	function lampOn(b){
+		var url = "/api/saberOn";
+		var data = {
+			"on": b
+		};
+	 	var json = JSON.stringify(data); 
+		$.ajax({
+		    type: 'POST',
+		    url: url,
+		    contentType: "application/json",
+		    data: json,
+		    dataType: 'json',
+		    success: function (json) {
+		        refresh();	
+		    }
+		});
+	};
+	
+	
+	function componentToHex(c) {
+	  var hex = c.toString(16);
+	  return hex.length == 1 ? "0" + hex : hex;
+	}
+
+	function rgbToHex(r, g, b) {
+	  return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+	}
+	
+	function hexToRgb(hex) {
+	  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+	  return result ? [
+	    parseInt(result[1], 16),
+	    parseInt(result[2], 16),
+	    parseInt(result[3], 16)
+	  ] : null;
+	}
+	
+	function drawTable(json) {
+		
+	  var data = new google.visualization.DataTable(json);
+	
+	  var cssClassNames = {
+		'headerRow': 'large-font bold-font lcars-neon-carrot-bg lcars-black-color',
+		'tableRow': 'lcars-neon-carrot-color lcars-black-bg',
+		'oddTableRow': 'lcars-orange-peel-color lcars-tamarillo-bg',
+		'selectedTableRow': 'lcars-grey-bg',
+		'hoverTableRow': 'lcars-grey-bg',
+		'headerCell': 'lcars-pale-canary-color',
+		'tableCell': '',
+		'rowNumberCell': 'underline-blue-font'};
+	
+	  // Optional; add a title and set the width and height of the chart
+	  var options = {'title':'Group Chart', 'width':2500, 'height':600, is3D: true,
+		'cssClassNames': cssClassNames
+	  };
+	
+	  // Display the chart inside the <div> element with id="vlanchart"
+	  var chart = new google.visualization.Table(document.getElementById('saberTableDiv'));
+	  //var chart = google.visualization.Table(document.getElementById('vlanchart'));
+	
+	  function selectHandler() {
+	      var selectedItem = chart.getSelection()[0];
+	       if (selectedItem){
+	         var value = data.getValue(selectedItem.row, 0);
+			 var l = data.getNumberOfColumns();
+			 res = {};
+			 for (var i=0; i < l; i++){
+				var c = data.getColumnId(i);
+				res[c] = data.getValue(selectedItem.row, i);
+			 }
+	         //alert('The user selected ' + JSON.stringify(res));
+			 //showPopup(true);
+			 
+			 $("#clientId").text(res.clientId);
+			 $("#dseq").val(res.dseq);
+			 $("#nseq").val(res.nseq);
+			 $("#days").val(res.days);
+			 $("#daye").val(res.daye);
+			 $("#timer").val(res.timer);
+			 
+			 drgb = JSON.parse(res.drgb);
+			 $("#drgb").val(rgbToHex(drgb[0], drgb[1], drgb[2]));
+			
+			 nrgb = JSON.parse(res.nrgb);
+			 $("#nrgb").val(rgbToHex(nrgb[0], nrgb[1], nrgb[2]));
+			 
+	       }
+      }  
+	  google.visualization.events.addListener(chart, 'select', selectHandler);    
+	  chart.draw(data, options);
+	}
+
+  </script>
+
+</head>
+<body>	
+	<div id="saberTemplates">
+		<div id="saberTemp">
+			
+				<h1>Lamp Switch</h1>
+				<div id="lampSwitch">
+					<div class="lcars-column lcars-u-2">
+						<div class="lcars-bracket top hollow"></div>
+						<div class="lcars-row">
+							<div id="lampOn"  class="lcars-element lcars-atomic-tangerine-bg" style="color:black">ON</div>
+							<div id="lampOff" class="lcars-element lcars-navy-blue-bg" style="color:white">OFF</div>
+						</div>
+						<div class="lcars-bracket bottom hollow"></div>
+					</div>
+				</div>
+				
+				<H1>Lamp Setting</H1>
+				<div id="saberForm" class="lcars-row">
+					<div class="lcars-bracket left"></div>
+					<div class="lcars-column">
+							<div class="lcars-row">
+								<div class="lcars-element lcars-neon-carrot-bg clientId">Save</div>
+								<div class="lcars-element lcars-neon-carrot-bg">Mode</div>
+								<div class="lcars-element lcars-neon-carrot-bg">Colour</div>
+								<div class="lcars-element lcars-neon-carrot-bg">Sequence</div>
+							</div>
+							<div class="lcars-row">
+								<div id="clientId" class="lcars-element lcars-atomic-tangerine-bg rounded clientId">Id</div>
+								<div class="lcars-element">Day</div>
+								<div class="lcars-element">
+									<input id="drgb" type="color" id="drgb"  value="#ff0000" style="width:85%;">
+								</div>
+								<div class="lcars-element">
+								    <select id="dseq" class="lcars-golden-tanoi-bg" name="dseq">
+									  <option value=0>Alert</option>
+									  <option value=1>NewHope</option>
+									  <option value=2>Wand</option>
+									  <option value=3>Candle</option>
+									  <option value=4>Spark</option>
+									  <option value=5>Binary</option>
+									  <option value=6>Brightness</option>
+									</select>
+								</div>
+							</div>
+							<div class="lcars-row">
+								<div id="saveAll" class="lcars-element lcars-atomic-tangerine-bg rounded clientId">ALL</div>
+								<div class="lcars-element">Night</div>
+								<div class="lcars-element">
+								    <input id="nrgb" type="color" value="#ff0000" style="width:85%;">
+								</div>
+								<div class="lcars-element">
+									<select id="nseq" class="lcars-golden-tanoi-bg" name="nseq">
+									  <option value=0>Alert</option>
+									  <option value=1>NewHope</option>
+									  <option value=2>Wand</option>
+									  <option value=3>Candle</option>
+									  <option value=4>Spark</option>
+									  <option value=5>Binary</option>
+									  <option value=6>Brightness</option>
+									</select>
+								</div>
+							</div>
+							<div class="lcars-row">
+								<div class="lcars-element lcars-gray-bg clientId"></div>
+								<div class="lcars-element lcars-neon-carrot-bg">Day Start</div>
+								<div class="lcars-element">
+									<input id="days" class="lcars-golden-tanoi-bg" type="number" min="o" value="23" style="width:80px; color:black;">
+								</div>
+								<div class="lcars-element lcars-neon-carrot-bg">Timer (sec)</div>
+							</div>
+							<div class="lcars-row">
+								<div id="refresh" class="lcars-element lcars-atomic-tangerine-bg rounded clientId">Refresh</div>	
+								<div class="lcars-element lcars-neon-carrot-bg">Day End</div>
+								<div class="lcars-element">
+									<input id="daye" class="lcars-golden-tanoi-bg" type="number" min="0" value="23" style="width:80px; color:black;">
+								</div>
+								<div class="lcars-element">
+									<input id="timer" class="lcars-golden-tanoi-bg" type="number" min="1" value="60" style="width:80px; color:black;">
+								</div>
+							</div>
+						</div>
+					<div class="lcars-bracket right"></div>
+				</div>
+				
+				
+				<H1>Lamp Configuration</H1>
+				<div class="" id="saberTableDiv"></div>
+		</div>
+		
+		<div id="popupRegTemp">
+			<div class="lcars-black-bg lcars-white-color">
+				<table>
+					<tr><td>
+						<table>
+							<tr>
+								<td class="lcars-neon-carrot-bg">MAC</td>
+								<td><input type="text" id="mac" value="MAC" readonly=true/></td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Hostname</td>
+								<td><input type="text" id="hostname" value="hostname"/></td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Commennt</td>
+								<td><input type="text" id="comment" value="hostname"/></td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">VLAN</td>
+								<td>
+								     <select name="vlan" id="vlan" value="0">
+		                             </select>
+								</td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Group</td>
+								<td>
+								     <select name="Group" id="group" value="Default">
+		                             </select>
+								</td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Type 1</td>
+								<td>
+								    <select name="Type" id="type1" value="unknown">
+		                            </select>
+								</td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Type 2</td>
+								<td>
+								    <select name="Subtype" id="type2" value="unknown">
+		                            </select>
+								</td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Availability</td>
+								<td><input type="number" id="availability" value="0"></td>
+							</tr>
+							<tr>
+								<td class="lcars-neon-carrot-bg">Verified</td>
+								<td><input type="checkbox" id="verified" value=true/></td>
+							</tr>
+						</table>
+						<div class="lcars-row">
+							<div class="lcars-element rounded lcars-red-damask-bg" style="align-items: center;">
+								<a onclick="RegisterJS.regUpdate()">Store<a>
+							</div>
+							<div class="lcars-element rounded lcars-red-damask-bg" style="align-items: center;">
+								<a onclick="RegisterJS.getDetails()">Details<a>
+							</div>
+						</div>
+					</td>
+					<td>
+						<div id="regDetails" class="lcars-black-bg lcars-white-color">
+						</div>
+					</td></tr>
+				</table>
+			</div>
+			
+		</div>
+	</div>
+</body>
+</html>

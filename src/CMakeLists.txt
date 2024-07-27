@@ -34,11 +34,17 @@ target_link_libraries(${NAME}
     pico_cyw43_arch_lwip_sys_freertos
     twinThingPicoW
     LWIP_PORT
+    pico_lwip_sntp
 )
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(${NAME} 1)
-pico_enable_stdio_uart(${NAME} 0)
+pico_enable_stdio_usb(${NAME} 0)
+pico_enable_stdio_uart(${NAME} 1)
+target_compile_definitions(${NAME} PRIVATE
+    PICO_DEFAULT_UART_RX_PIN=12
+    PICO_DEFAULT_UART_TX_PIN=13
+)
+
 
 # create map/bin/hex file etc.
 pico_add_extra_outputs(${NAME})

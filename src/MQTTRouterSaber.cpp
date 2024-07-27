@@ -38,7 +38,7 @@ MQTTRouterSaber::~MQTTRouterSaber() {
  * @param mi = MQTT Interface
  */
 void MQTTRouterSaber::init(const char * id, MQTTInterface *mi){
-	MQTTRouterTwin::init(id, mi);
+	MQTTRouterTwin::init(mi);
 
 	if (pGroupTopicOn == NULL){
 		pGroupTopicOn = (char *)pvPortMalloc(
@@ -162,8 +162,10 @@ bool MQTTRouterSaber::fromSelf(const void * payload) {
 		return false;
 	}
 
-	if ( strcmp(json_getValue(from), pInterface->getId()) == 0){
-		return true;
+	if (pInterface != NULL){
+		if ( strcmp(json_getValue(from), pInterface->getId()) == 0){
+			return true;
+		}
 	}
 
 	return false;

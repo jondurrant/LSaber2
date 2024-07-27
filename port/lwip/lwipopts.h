@@ -104,7 +104,17 @@
 #define MEM_USE_POOLS 1
 #define MEMP_USE_CUSTOM_POOLS 1
 
-#define SNTP_SERVER_DNS 1
+//SNTP NETWORK TIME
+#include "pico/stdlib.h"
+#define SNTP_SUPPORT      1
+#define SNTP_SERVER_DNS   1
+void sntpSetTimeSec(uint32_t sec);
+#define SNTP_SET_SYSTEM_TIME(sec) sntpSetTimeSec(sec)
+//MEMP_NUM_SYS_TIMEOUTS Needs to be one larger than default for SNTP
+#define MEMP_NUM_SYS_TIMEOUT            (LWIP_NUM_SYS_TIMEOUT_INTERNAL + 1)
+
+//Once an hour
+#define SNTP_UPDATE_DELAY 60000*60
 
 
 #endif /* __LWIPOPTS_H__ */

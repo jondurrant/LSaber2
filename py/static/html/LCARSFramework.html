@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>LCARS</title>
+  <link rel="stylesheet" href="/static/css/lcars.css">
+  <link rel="stylesheet" href="/static/css/modal.css">
+  <style>
+  p, h1, h2, h3 {
+    margin-top: 1em;
+  }
+
+  pre {
+    display: inline;
+    white-space: pre-line;
+    word-wrap: break-word;
+  }
+
+  table.localCustomFunWithCaptions caption {
+    margin-left: -.5em;
+    margin-bottom: .5em;
+    text-align: right;
+    border-right: .8em solid;
+    border-left: 32rem solid;
+    border-radius: .5em;
+    padding-right: .33em;
+    padding-bottom: -.15em;
+  }
+
+  .popup {
+	text-align: left;
+	margin-left: 0.5em;
+  }
+
+  .menu {
+	
+  }
+  </style>
+  <script type="text/javascript" src="/static/js/jquery-3.5.1.min.js"></script>
+
+
+  <script type="text/javascript">
+    function showPain(id){
+	  $('.mainPanels').hide(); 
+	  $('#'+id).show();
+	}
+	
+	function showPopup(b){
+		if (b){
+			$('#popup').css("display", "block")
+		}else {
+			$('#popup').css("display", "none")
+		}
+	}
+	
+	function addTab(name, html){
+		id = name.replace(" ","");
+		h = '<div class="lcars-column lcars-u-5 mainPanels" id="' + id +  '">'+
+		    html + '</div>';
+		$('#container').append(h);
+		
+		
+		btn = '<a class="menu" onclick="showPain(\'' + 
+				id + '\')">' +
+		    '<div class="lcars-element button ">' + name + '</div></a>';
+			
+		
+		//$('.menu').last().after(btn);
+		//alert($('.menu').last().html());
+		$('.menu').last().after(btn);
+		
+	}
+	
+	function setTitle(title){
+		$('#title').html(title);
+	}	
+	
+	function setPopup(html){
+		$('#popupContent').html(html);
+	}
+	
+  </script>
+
+</head>
+<body>
+	<div class="lcars-app-container">
+
+		<!-- HEADER ==================================================== -->
+
+		<div id="header" class="lcars-row header lcars-neon-carrot-bg">
+
+			<!-- ELBOW -->
+			<div class="lcars-elbow left-bottom lcars-neon-carrot-bg"></div>
+
+			<!-- BAR WITH TITLE -->
+			<div class="lcars-bar horizontal lcars-neon-carrot-bg">
+				<div id="title" class="lcars-title right">Network Monitor</div>
+			</div>
+
+			<!-- ROUNDED EDGE DECORATED -->
+			<div class="lcars-bar horizontal right-end decorated lcars-neon-carrot-bg"></div>
+		</div>
+
+		<!-- SIDE MENU ================================================= -->
+
+		<div id="left-menu" class="lcars-column start-space lcars-u-1 lcars-neon-carrot-bg" style="text-transform: uppercase;">
+			<a class="menu" onclick='showPain("about")'><div class="lcars-element button ">ABOUT</div></a>
+			<!-- FILLER -->
+			<div class="lcars-bar lcars-u-1 lcars-neon-carrot-bg"></div>
+		</div>
+
+		<!-- FOOTER ==================================================== -->
+
+		<div id="footer" class="lcars-row lcars-neon-carrot-bg ">
+			<!-- ELBOW -->
+			<div class="lcars-elbow left-top lcars-neon-carrot-bg"></div>
+			<!-- BAR -->
+			<div class="lcars-bar horizontal both-divider bottom lcars-neon-carrot-bg"></div>
+			<!-- ROUNDED EDGE -->
+			<div class="lcars-bar horizontal right-end left-divider bottom lcars-neon-carrot-bg"></div>
+		</div>
+
+		<!-- MAIN CONTAINER -->
+		<div id="container">
+			<!-- Modal popup -->
+			<!-- The Modal -->			
+			<div id="popup" class="modal lcars-app-container">
+				<div class="lcars-row" style="width: 80%; height:80%;margin-left: 20px; ">
+					<div class="lcars-bracket left"></div>
+					<div class="lcars-column lcars-u-8">
+						<div class="lcars-bar horizontal ">
+							<div class="lcars-title center">Popup</div>
+							<div class="lcars-title right"><span class="close"><a onclick='showPopup(false)'>&times;</a></span></div>
+						</div>
+						<div class="lcars-element" style="width: 100%; height:100%;">
+							<div id="popupContent" class="lcars-black-bg lcars-white-color popup" style="width: 100%; height:100%;">
+								<p>Popup Content</p>
+							</div>
+						</div>
+						<div class="lcars-element" style="width: 100%"></div>
+					</div>
+					<div class="lcars-bracket right"></div>
+				</div>
+			</div>
+	
+	
+			<!-- COLUMN LAYOUT -->
+			<div class="lcars-column lcars-u-5 mainPanels" id="about">
+
+				<h1>LCARS</h1>
+
+				<p>
+					LCARS is a purely client-side CSS and HTML framework, similar to Bootstrap, Foundation, Topcoat, Brick, or Pure to create user interfaces similiar to a certain popular sci-fi franchise. Enjoy!
+				</p>
+				<p>
+					There are a few requirements in terms of HTML element nesting and corresponding CSS classes that are necessary for the styling to apply correctly. Looking directly at the source of this demonstration/documentation page should prove instructive. You might even use a copy of this page as a sort of a template; just delete and replace the parts you do not want.
+				</p>
+				<p>
+					Each of the following sections will specify a primary CSS class name (in blue colored text) to assign to an HTML element to apply the appropriate CSS styling rules to achieve the described effect. Many primary classes will also have a list of secondary modifier class names (in red colored text) that can be appended to the class list to give additional styling options. Note that CSS classes are cumulative and cascading; i.e., you can combine them and the styling effects will (mostly) be inherited by the descendent nested-within html elements.
+				</p>
+			</div>
+			
+		</div>
+	</div>
+</body>
+</html>

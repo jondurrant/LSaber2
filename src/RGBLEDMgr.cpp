@@ -8,6 +8,9 @@
 #include "RGBLEDMgr.h"
 #include <WifiHelper.h>
 #include <stdlib.h>
+#define LIBRARY_LOG_NAME "LSABER2"
+#define LIBRARY_LOG_LEVEL LOG_INFO
+#include "logging_stack.h"
 
 RGBLEDMgr::RGBLEDMgr(RGBLEDAgent * led) {
 	pLed = led;
