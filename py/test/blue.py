@@ -76,7 +76,7 @@ rainbow= [
 ];
 
 
-j = {'delta': {'rgb':[0,0,255]}}
+j = {'delta': {'drgb':[0,0,255]}}
 p = json.dumps(j)
 print("Publishing set %s"%p)
 infot = client.publish(set_topic, p,retain=False, qos=1)
